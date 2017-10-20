@@ -1,10 +1,8 @@
 package com.bard.rpcTest;
 
-import com.bard.RpcInvocationHandler;
+import com.bard.rpc.RpcInvocationHandler;
 import org.junit.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 
@@ -16,8 +14,8 @@ public class RpcProxyTest {
     @Test
     public void rpcProxyTest() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         // 获取代理类
-        Class<?> proxyClass = Proxy.getProxyClass(RpcProxyTest.class.getClassLoader(), HelloWorldInface.class);
-        Constructor<?> constructor = proxyClass.getConstructor(RpcInvocationHandler.class);
+       /* Class<?> proxyClass = Proxy.getProxyClass(RpcProxyTest.class.getClassLoader(), HelloWorldInface.class);
+        Constructor<?> constructor = proxyClass.getConstructor(InvocationHandler.class);
         InvocationHandler invocationHandler = new RpcInvocationHandler(new HelloWorldInface() {
             @Override
             public void helloWorld(String text) {
@@ -25,7 +23,11 @@ public class RpcProxyTest {
             }
         });
         HelloWorldInface inface = (HelloWorldInface) constructor.newInstance(invocationHandler);
-        inface.helloWorld("1231231321");
+        inface.helloWorld("1231231321");*/
+
+        HelloWorldInface inface = (HelloWorldInface) Proxy.newProxyInstance(RpcProxyTest.class.getClassLoader(), new Class[]{HelloWorldInface.class}, new RpcInvocationHandler());
+        String result = inface.helloWorld("adasdasdsaas");
+
 
     }
 }

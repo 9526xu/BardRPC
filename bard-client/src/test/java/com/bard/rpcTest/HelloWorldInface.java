@@ -6,5 +6,5 @@ package com.bard.rpcTest;
  */
 public interface HelloWorldInface {
 
-    void helloWorld(String text);
+    String helloWorld(String text);
 }
