@@ -7,6 +7,12 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
+  <parent>
+    <groupId>com.bard</groupId>
+    <artifactId>bard-all</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
   <name>bard-client</name>
   <url>http://maven.apache.org</url>
 
