@@ -12,10 +12,10 @@ public abstract class RpcClient {
 
     protected String host;
 
-    protected String port;
+    protected int port;
 
 
-    public RpcClient(String host, String port) {
+    public RpcClient(String host, int port) {
         this(new RpcConnectConfig(host, port));
     }
 
@@ -31,5 +31,6 @@ public abstract class RpcClient {
      * @param <T>
      * @return
      */
-    abstract <T> T refer(Class<T> classT);
+    public abstract <T> T refer(Class<T> classT);
+
 }

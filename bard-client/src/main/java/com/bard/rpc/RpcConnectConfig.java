@@ -12,7 +12,7 @@ public class RpcConnectConfig {
 
     private String host;
 
-    private String port;
+    private int port;
     /**
      * 默认超时60s
      */
@@ -21,13 +21,13 @@ public class RpcConnectConfig {
     private static final Long DEFAULT_TIME_OUT = 60000L;
 
 
-    public RpcConnectConfig(String host, String port, Long connectTimeOut) {
+    public RpcConnectConfig(String host, int port, Long connectTimeOut) {
         this.host = host;
         this.port = port;
         this.connectTimeOut = connectTimeOut;
     }
 
-    public RpcConnectConfig(String host, String port) {
+    public RpcConnectConfig(String host, int port) {
         this.host = host;
         this.port = port;
     }

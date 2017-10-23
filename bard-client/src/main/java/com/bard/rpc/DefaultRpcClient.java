@@ -10,8 +10,10 @@ import java.lang.reflect.Proxy;
 public class DefaultRpcClient extends RpcClient {
 
 
-    public DefaultRpcClient(String host, String port) {
+    public DefaultRpcClient(String host, int port) {
         super(host, port);
+        this.host = host;
+        this.port = port;
     }
 
     @Override
