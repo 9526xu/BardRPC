@@ -12,9 +12,19 @@ import java.lang.reflect.Method;
 @Slf4j
 public class RpcInvocationHandler implements InvocationHandler {
 
+    private RpcConnectConfig config;
+
+
+    public RpcInvocationHandler(RpcConnectConfig config) {
+        this.config = config;
+    }
+
+    public RpcInvocationHandler() {
+    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
         // 如果是接口
         return rpcInvoke(method, args);
 
