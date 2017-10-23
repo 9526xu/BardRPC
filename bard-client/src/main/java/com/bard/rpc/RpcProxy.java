@@ -6,4 +6,5 @@ package com.bard.rpc;
  */
 public class RpcProxy {
 
+
 }
