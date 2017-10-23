@@ -48,6 +48,19 @@
                 <version>23.0</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/org.apache.thrift/libthrift -->
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>libthrift</artifactId>
+                <version>0.10.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.esotericsoftware</groupId>
+                <artifactId>kryo</artifactId>
+                <version>4.0.1</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
