@@ -1,5 +1,6 @@
 package com.bard.rpc;
 
+import com.bard.transport.BardRpcRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
@@ -42,8 +43,12 @@ public class RpcInvocationHandler implements InvocationHandler {
         //获取方法名 参数等信息
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
+        String ifaceName = method.getDeclaringClass().getName();
 
-        log.debug("method name is " + methodName + " parameterTypes is " + parameterTypes);
+        BardRpcRequest request = BardRpcRequest.builder()
+                .ifaceName(ifaceName).methodName(methodName)
+                .paramTypes(parameterTypes).timeOut(config.getConnectTimeOut()).build();
+
 
         return "hello World";
     }

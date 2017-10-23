@@ -8,9 +8,10 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @Author andyXu xu9529@gmail.com
  * @Date 2017/10/23
- *
+ * <p>
  * RPC 发送消息类
  */
+
 @Builder
 @Data
 public class BardRpcRequest {
@@ -40,9 +41,8 @@ public class BardRpcRequest {
     /**
      * 请求 id
      */
-    private long requestId;
+    @Builder.Default
+    private final long requestId = REQUEST_ID.incrementAndGet();
 
-    public BardRpcRequest() {
-        this.requestId = REQUEST_ID.incrementAndGet();
-    }
+
 }

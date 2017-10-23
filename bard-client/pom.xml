@@ -16,5 +16,12 @@
     <name>bard-client</name>
     <url>http://maven.apache.org</url>
 
+    <dependencies>
+
+        <dependency>
+            <groupId>com.bard</groupId>
+            <artifactId>bard-transport</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
