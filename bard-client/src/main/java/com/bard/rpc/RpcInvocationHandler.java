@@ -45,9 +45,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         Class<?>[] parameterTypes = method.getParameterTypes();
         String ifaceName = method.getDeclaringClass().getName();
 
-        BardRpcRequest request = BardRpcRequest.builder()
-                .ifaceName(ifaceName).methodName(methodName)
-                .paramTypes(parameterTypes).timeOut(config.getConnectTimeOut()).build();
+        BardRpcRequest request = new BardRpcRequest(ifaceName, methodName, args, parameterTypes, config.getConnectTimeOut());
 
 
         return "hello World";

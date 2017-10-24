@@ -1,7 +1,7 @@
 package com.bard.transport;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -11,8 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>
  * RPC 发送消息类
  */
-
-@Builder
+@NoArgsConstructor
 @Data
 public class BardRpcRequest {
 
@@ -41,8 +40,13 @@ public class BardRpcRequest {
     /**
      * 请求 id
      */
-    @Builder.Default
     private final long requestId = REQUEST_ID.incrementAndGet();
 
-
+    public BardRpcRequest(String ifaceName, String methodName, Object[] args, Class<?>[] paramTypes, Long timeOut) {
+        this.ifaceName = ifaceName;
+        this.methodName = methodName;
+        this.args = args;
+        this.paramTypes = paramTypes;
+        this.timeOut = timeOut;
+    }
 }
