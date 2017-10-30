@@ -1,7 +1,6 @@
 package com.bard.rpc;
 
-import com.bard.serialization.RpcSerialization;
-import com.bard.serialization.impl.KryoRpcSerialization;
+import com.bard.codec.BardRpcClientCodec;
 import com.bard.transport.BardRpcRequest;
 import com.bard.transport.BardRpcResponse;
 import io.netty.bootstrap.Bootstrap;
@@ -47,7 +46,7 @@ public class RpcInvocationHandler implements InvocationHandler {
      * @param args
      * @return
      */
-    private Object rpcInvoke(Method method, Object[] args) {
+    private Object rpcInvoke(Method method, Object[] args) throws Exception {
         //获取方法名 参数等信息
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -56,7 +55,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         BardRpcRequest request = new BardRpcRequest(ifaceName, methodName, args, parameterTypes, config.getConnectTimeOut());
         BardRpcResponse response = sendRequest(request, config);
 
-        return "hello World";
+        return response;
     }
 
     /**
@@ -66,32 +65,41 @@ public class RpcInvocationHandler implements InvocationHandler {
      * @param config
      * @return
      */
-    private BardRpcResponse sendRequest(BardRpcRequest request, RpcConnectConfig config) {
-        // 序列化
-        RpcSerialization serialization = new KryoRpcSerialization();
-        byte[] bytes = serialization.serialize(request);
+    private BardRpcResponse sendRequest(BardRpcRequest request, RpcConnectConfig config) throws Exception {
+        BardRpcResponse response = new BardRpcResponse();
 
         EventLoopGroup group = new NioEventLoopGroup();
 
         Bootstrap bootstrap = new Bootstrap();
-
         bootstrap.group(group)
                 .channel(NioSocketChannel.class)
                 .remoteAddress(config.getHost(), config.getPort()).handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 ChannelPipeline pipeline = socketChannel.pipeline();
-                pipeline.addLast(new BardClientHandler());
+                pipeline.addLast(new BardRpcClientCodec(response));
             }
         }).option(ChannelOption.SO_KEEPALIVE, true);
 
         try {
             ChannelFuture channelFuture = bootstrap.bind().sync();
 
-        } catch (InterruptedException e) {
+            ChannelFuture sendFeature = channelFuture.channel().writeAndFlush(request);
+            sendFeature.addListener(future -> {
+                if (future.isSuccess()) {
+
+                } else {
+                    log.error("发送失败");
+                }
+            });
+            channelFuture.channel().closeFuture().sync();
+
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            group.shutdownGracefully().sync();
         }
-        return null;
+        return response;
 
     }
 }

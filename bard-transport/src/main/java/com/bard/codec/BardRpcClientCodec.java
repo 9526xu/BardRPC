@@ -16,6 +16,14 @@ import java.util.List;
  * client 消息解码与编码
  */
 public class BardRpcClientCodec extends ByteToMessageCodec<BardRpcRequest> {
+
+    private BardRpcResponse response;
+
+    public BardRpcClientCodec(BardRpcResponse response) {
+        this.response = response;
+    }
+
+
     @Override
     protected void encode(ChannelHandlerContext ctx, BardRpcRequest msg, ByteBuf out) throws Exception {
         RpcSerialization serialization = new KryoRpcSerialization();
@@ -30,7 +38,8 @@ public class BardRpcClientCodec extends ByteToMessageCodec<BardRpcRequest> {
         byte[] bytes = new byte[length];
         in.readBytes(bytes);
         RpcSerialization serialization = new KryoRpcSerialization();
-        BardRpcResponse response = serialization.deserialize(bytes, BardRpcResponse.class);
+        response = serialization.deserialize(bytes, BardRpcResponse.class);
         out.add(response);
+
     }
 }
