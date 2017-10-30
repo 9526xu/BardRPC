@@ -1,6 +1,14 @@
 package com.bard.rpc;
 
+import com.bard.serialization.RpcSerialization;
+import com.bard.serialization.impl.KryoRpcSerialization;
 import com.bard.transport.BardRpcRequest;
+import com.bard.transport.BardRpcResponse;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
@@ -46,8 +54,44 @@ public class RpcInvocationHandler implements InvocationHandler {
         String ifaceName = method.getDeclaringClass().getName();
 
         BardRpcRequest request = new BardRpcRequest(ifaceName, methodName, args, parameterTypes, config.getConnectTimeOut());
-
+        BardRpcResponse response = sendRequest(request, config);
 
         return "hello World";
+    }
+
+    /**
+     * 发送请求
+     *
+     * @param request
+     * @param config
+     * @return
+     */
+    private BardRpcResponse sendRequest(BardRpcRequest request, RpcConnectConfig config) {
+        // 序列化
+        RpcSerialization serialization = new KryoRpcSerialization();
+        byte[] bytes = serialization.serialize(request);
+
+        EventLoopGroup group = new NioEventLoopGroup();
+
+        Bootstrap bootstrap = new Bootstrap();
+
+        bootstrap.group(group)
+                .channel(NioSocketChannel.class)
+                .remoteAddress(config.getHost(), config.getPort()).handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                ChannelPipeline pipeline = socketChannel.pipeline();
+                pipeline.addLast(new BardClientHandler());
+            }
+        }).option(ChannelOption.SO_KEEPALIVE, true);
+
+        try {
+            ChannelFuture channelFuture = bootstrap.bind().sync();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+
     }
 }
