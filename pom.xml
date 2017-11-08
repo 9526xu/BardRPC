@@ -15,6 +15,7 @@
         <module>bard-client</module>
         <module>bard-transport</module>
         <module>bard-server</module>
+        <module>bard-test</module>
     </modules>
 
     <properties>
@@ -38,6 +39,12 @@
             <dependency>
                 <groupId>com.bard</groupId>
                 <artifactId>bard-transport</artifactId>
+                <version>${version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.bard</groupId>
+                <artifactId>bard-server</artifactId>
                 <version>${version}</version>
             </dependency>
 

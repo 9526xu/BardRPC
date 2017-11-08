@@ -53,6 +53,11 @@ public class BardRpcServer {
         instanceMap.put(serviceName, instance);
     }
 
+    public void registerService(Object instance) {
+        String serviceName = instance.getClass().getDeclaringClass().getName();
+        registerService(serviceName, instance);
+    }
+
     /**
      * 获取服务实例
      *
