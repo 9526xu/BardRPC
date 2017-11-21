@@ -9,9 +9,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +48,7 @@ public class BardRpcServer {
      * @param instance    实例
      */
     public void registerService(String serviceName, Object instance) {
-        Preconditions.checkArgument(StringUtils.isBlank(serviceName), "服务名不能为空");
+        Preconditions.checkArgument(StringUtils.isNotBlank(serviceName), "服务名不能为空");
         if (instanceMap.containsKey(serviceName)) {
             throw new RuntimeException("服务名已存在,不允许重复");
         }
@@ -54,7 +56,16 @@ public class BardRpcServer {
     }
 
     public void registerService(Object instance) {
-        String serviceName = instance.getClass().getDeclaringClass().getName();
+        //fixme 暂且设计类智能实现一个接口
+        List<Class<?>> list = ClassUtils.getAllInterfaces(instance.getClass());
+        if (list == null && list.size() == 0) {
+            throw new RuntimeException("这个类未实现接口");
+        } else if (list.size() > 1) {
+            throw new RuntimeException("这个类目前只能实现一个接口");
+        }
+
+
+        String serviceName = list.get(0).getSimpleName();
         registerService(serviceName, instance);
     }
 
@@ -85,6 +96,7 @@ public class BardRpcServer {
 
 
         try {
+
             bootstrap.group(group)
                     .channel(NioServerSocketChannel.class)
                     .localAddress(new InetSocketAddress(port))
@@ -101,24 +113,12 @@ public class BardRpcServer {
             ChannelFuture future = bootstrap.bind().sync();
             log.debug("服务启动成功,port:{}", port);
 
-            processReuqest(future.channel());
-
-
             future.channel().closeFuture().sync();
 
 
         } finally {
             group.shutdownGracefully().sync();
         }
-
-    }
-
-    /**
-     * 读取数据
-     *
-     * @param channel
-     */
-    private void processReuqest(Channel channel) {
 
     }
 

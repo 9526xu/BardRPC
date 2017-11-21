@@ -5,6 +5,7 @@ import com.bard.serialization.SerializationFactory;
 import com.bard.serialization.impl.KryoRpcSerialization;
 import com.bard.transport.BardRpcRequest;
 import com.bard.transport.BardRpcResponse;
+import com.bard.utils.UnpackUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
@@ -27,9 +28,11 @@ public class BardRpcServerCodec extends ByteToMessageCodec<BardRpcResponse> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        int length = in.readableBytes();
-        byte[] bytes = new byte[length];
-        in.readBytes(bytes);
+
+        byte[] bytes = UnpackUtils.unpackByteBuf(in);
+        if (bytes == null) {
+            return;
+        }
         RpcSerialization serialization = new KryoRpcSerialization();
         BardRpcRequest request = serialization.deserialize(bytes, BardRpcRequest.class);
         out.add(request);

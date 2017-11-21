@@ -4,6 +4,7 @@ import com.bard.serialization.RpcSerialization;
 import com.bard.serialization.impl.KryoRpcSerialization;
 import com.bard.transport.BardRpcRequest;
 import com.bard.transport.BardRpcResponse;
+import com.bard.utils.UnpackUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
@@ -28,15 +29,18 @@ public class BardRpcClientCodec extends ByteToMessageCodec<BardRpcRequest> {
     protected void encode(ChannelHandlerContext ctx, BardRpcRequest msg, ByteBuf out) throws Exception {
         RpcSerialization serialization = new KryoRpcSerialization();
         byte[] bytes = serialization.serialize(msg);
+        // 解决 TCP 拆包粘包问题
+        out.writeInt(bytes.length);
         out.writeBytes(bytes);
 
     }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        int length = in.readableBytes();
-        byte[] bytes = new byte[length];
-        in.readBytes(bytes);
+        byte[] bytes = UnpackUtils.unpackByteBuf(in);
+        if (bytes == null) {
+            return;
+        }
         RpcSerialization serialization = new KryoRpcSerialization();
         response = serialization.deserialize(bytes, BardRpcResponse.class);
         out.add(response);

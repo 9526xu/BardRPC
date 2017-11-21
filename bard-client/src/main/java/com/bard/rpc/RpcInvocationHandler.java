@@ -3,6 +3,7 @@ package com.bard.rpc;
 import com.bard.codec.BardRpcClientCodec;
 import com.bard.transport.BardRpcRequest;
 import com.bard.transport.BardRpcResponse;
+import com.google.common.reflect.AbstractInvocationHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -10,15 +11,17 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 /**
  * @Author andyXu xu9529@gmail.com
  * @Date 2017/10/20
+ * 继承 guava 的AbstractInvocationHandler
+ * 处理 Object 自带 toString hashcode equals
+ * 主要发现 debug 的时候调用代理方法 导致报错
  */
 @Slf4j
-public class RpcInvocationHandler implements InvocationHandler {
+public class RpcInvocationHandler extends AbstractInvocationHandler {
 
     private RpcConnectConfig config;
 
@@ -30,13 +33,10 @@ public class RpcInvocationHandler implements InvocationHandler {
     public RpcInvocationHandler() {
     }
 
+
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-        // 如果是接口
+    protected Object handleInvocation(Object proxy, Method method, Object[] args) throws Throwable {
         return rpcInvoke(method, args);
-
-
     }
 
     /**
@@ -82,7 +82,9 @@ public class RpcInvocationHandler implements InvocationHandler {
         }).option(ChannelOption.SO_KEEPALIVE, true);
 
         try {
-            ChannelFuture channelFuture = bootstrap.bind().sync();
+            ChannelFuture channelFuture = bootstrap.connect().sync();
+
+            Channel channel = channelFuture.channel();
 
             ChannelFuture sendFeature = channelFuture.channel().writeAndFlush(request);
             sendFeature.addListener(future -> {
