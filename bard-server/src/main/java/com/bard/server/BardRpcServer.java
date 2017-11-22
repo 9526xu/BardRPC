@@ -4,7 +4,10 @@ import com.bard.codec.BardRpcServerCodec;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -65,7 +68,7 @@ public class BardRpcServer {
         }
 
 
-        String serviceName = list.get(0).getSimpleName();
+        String serviceName = list.get(0).getName();
         registerService(serviceName, instance);
     }
 
@@ -103,8 +106,8 @@ public class BardRpcServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new BardServerChandler(instanceMap));
-                            ch.pipeline().addLast(new BardRpcServerCodec());
+                            ch.pipeline().addLast("serverCodec", new BardRpcServerCodec());
+                            ch.pipeline().addLast("serverBusiness", new BardServerChandler(instanceMap));
                         }
                     }).option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);

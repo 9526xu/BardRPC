@@ -23,6 +23,7 @@ public class BardRpcServerCodec extends ByteToMessageCodec<BardRpcResponse> {
     protected void encode(ChannelHandlerContext ctx, BardRpcResponse msg, ByteBuf out) throws Exception {
         RpcSerialization serialization = SerializationFactory.cerateKryoSerializatio();
         byte[] bytes = serialization.serialize(msg);
+        out.writeInt(bytes.length);
         out.writeBytes(bytes);
     }
 

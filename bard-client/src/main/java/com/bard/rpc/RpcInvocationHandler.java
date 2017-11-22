@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @Author andyXu xu9529@gmail.com
@@ -54,8 +55,11 @@ public class RpcInvocationHandler extends AbstractInvocationHandler {
 
         BardRpcRequest request = new BardRpcRequest(ifaceName, methodName, args, parameterTypes, config.getConnectTimeOut());
         BardRpcResponse response = sendRequest(request, config);
-
-        return response;
+        if (response.getObject() != null) {
+            return response.getObject();
+        } else {
+            throw new RuntimeException("RPC 调用异常");
+        }
     }
 
     /**
@@ -66,8 +70,8 @@ public class RpcInvocationHandler extends AbstractInvocationHandler {
      * @return
      */
     private BardRpcResponse sendRequest(BardRpcRequest request, RpcConnectConfig config) throws Exception {
-        BardRpcResponse response = new BardRpcResponse();
-
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final BardRpcResponse response = new BardRpcResponse();
         EventLoopGroup group = new NioEventLoopGroup();
 
         Bootstrap bootstrap = new Bootstrap();
@@ -77,24 +81,40 @@ public class RpcInvocationHandler extends AbstractInvocationHandler {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 ChannelPipeline pipeline = socketChannel.pipeline();
-                pipeline.addLast(new BardRpcClientCodec(response));
+                pipeline.addLast("clientCodec", new BardRpcClientCodec());
+                pipeline.addLast("clientBusiness", new SimpleChannelInboundHandler<BardRpcResponse>() {
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, BardRpcResponse msg) throws Exception {
+                        response.setObject(msg.getObject());
+                        response.setError(msg.getError());
+                        response.setRequestId(msg.getRequestId());
+                        response.setCode(msg.getCode());
+                        doneSignal.countDown();
+                    }
+                });
             }
         }).option(ChannelOption.SO_KEEPALIVE, true);
 
         try {
+
             ChannelFuture channelFuture = bootstrap.connect().sync();
-
             Channel channel = channelFuture.channel();
+            ChannelFuture sendFeature = channel.writeAndFlush(request);
 
-            ChannelFuture sendFeature = channelFuture.channel().writeAndFlush(request);
             sendFeature.addListener(future -> {
                 if (future.isSuccess()) {
-
+                    log.debug("发送成功");
                 } else {
                     log.error("发送失败");
                 }
             });
-            channelFuture.channel().closeFuture().sync();
+            doneSignal.await();
+
+            channel.close().sync();
+            channel.closeFuture().sync();
+
+
+            return response;
 
         } catch (Exception e) {
             e.printStackTrace();

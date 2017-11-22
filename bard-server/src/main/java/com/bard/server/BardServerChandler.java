@@ -37,6 +37,5 @@ public class BardServerChandler extends SimpleChannelInboundHandler<BardRpcReque
         Object result = method.invoke(instance, msg.getArgs());
         response.setObject(result);
         ctx.writeAndFlush(response);
-
     }
 }
