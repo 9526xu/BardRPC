@@ -93,14 +93,15 @@ public class BardRpcServer {
      * 启动服务端程序
      */
     public void startServer() throws Exception {
-        EventLoopGroup group = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup workGroup = new NioEventLoopGroup();
 
         ServerBootstrap bootstrap = new ServerBootstrap();
 
 
         try {
 
-            bootstrap.group(group)
+            bootstrap.group(bossGroup,workGroup)
                     .channel(NioServerSocketChannel.class)
                     .localAddress(new InetSocketAddress(port))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -120,7 +121,8 @@ public class BardRpcServer {
 
 
         } finally {
-            group.shutdownGracefully().sync();
+            bossGroup.shutdownGracefully().sync();
+            workGroup.shutdownGracefully().sync();
         }
 
     }
