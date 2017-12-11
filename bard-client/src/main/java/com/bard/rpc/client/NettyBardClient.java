@@ -2,8 +2,11 @@ package com.bard.rpc.client;
 
 import com.alibaba.fastjson.JSON;
 import com.bard.codec.BardRpcClientCodec;
+import com.bard.rpc.BardClientHandler;
+import com.bard.rpc.CallBackService;
 import com.bard.rpc.RpcConnectConfig;
 import com.bard.transport.BardRpcRequest;
+import com.google.common.collect.Maps;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -12,6 +15,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author andyXu xu9529@gmail.com
@@ -28,6 +32,10 @@ public class NettyBardClient implements BardClient {
     private EventLoopGroup eventLoopGroup;
 
     private Channel channel;
+    /**
+     * requestId 与返回处理函数
+     */
+    private Map<Long, CallBackService> callBackMap = Maps.newConcurrentMap();
 
 
     public NettyBardClient(RpcConnectConfig config) {
@@ -52,7 +60,7 @@ public class NettyBardClient implements BardClient {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     ChannelPipeline pipeline = socketChannel.pipeline();
                     pipeline.addLast("clientCodec", new BardRpcClientCodec());
-
+                    pipeline.addLast("busProcess", new BardClientHandler(callBackMap));
                 }
             }).option(ChannelOption.SO_KEEPALIVE, true);
 
@@ -72,7 +80,8 @@ public class NettyBardClient implements BardClient {
             throw new RuntimeException("channel 尚未创建或者 channel 连接未就绪");
         }
         ChannelFuture sendFeature = channel.writeAndFlush(request);
-
+        CallBackService callBackService = new CallBackService(request);
+        callBackMap.put(request.getRequestId(), callBackService);
         sendFeature.addListener(future -> {
             if (future.isSuccess()) {
                 log.debug("请求数据:{},发送成功", JSON.toJSONString(request));
