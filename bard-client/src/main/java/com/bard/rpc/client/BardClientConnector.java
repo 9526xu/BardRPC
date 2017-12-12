@@ -10,7 +10,7 @@ import java.io.IOException;
  * @date 2017/12/5
  * 客户端相关接口
  */
-public interface BardClient extends Closeable {
+public interface BardClientConnector extends Closeable {
 
 
     void connect();

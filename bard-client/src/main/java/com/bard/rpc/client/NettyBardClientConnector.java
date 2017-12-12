@@ -23,7 +23,7 @@ import java.util.Map;
  * client netty 实现
  */
 @Slf4j
-public class NettyBardClient implements BardClient {
+public class NettyBardClientConnector implements BardClientConnector {
 
     private RpcConnectConfig config;
 
@@ -38,11 +38,11 @@ public class NettyBardClient implements BardClient {
     private Map<Long, CallBackService> callBackMap = Maps.newConcurrentMap();
 
 
-    public NettyBardClient(RpcConnectConfig config) {
+    public NettyBardClientConnector(RpcConnectConfig config) {
         this.config = config;
     }
 
-    public NettyBardClient(String host, int port) {
+    public NettyBardClientConnector(String host, int port) {
         this(new RpcConnectConfig(host, port));
     }
 
