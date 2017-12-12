@@ -1,6 +1,8 @@
 package com.bard.rpc;
 
 import com.bard.codec.BardRpcClientCodec;
+import com.bard.rpc.client.BardClientConnector;
+import com.bard.rpc.client.BardClientConnectorFactory;
 import com.bard.transport.BardRpcRequest;
 import com.bard.transport.BardRpcResponse;
 import com.google.common.reflect.AbstractInvocationHandler;
@@ -52,9 +54,12 @@ public class RpcInvocationHandler extends AbstractInvocationHandler {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         String ifaceName = method.getDeclaringClass().getName();
-
         BardRpcRequest request = new BardRpcRequest(ifaceName, methodName, args, parameterTypes, config.getConnectTimeOut());
-        BardRpcResponse response = sendRequest(request, config);
+        // 获取 Connector 类
+        BardClientConnector clientConnector = BardClientConnectorFactory.newNettyClientInstance(config);
+        CallBackService callBackService = clientConnector.sendRequest(request);
+
+        BardRpcResponse response = (BardRpcResponse) callBackService.getResult();
         if (response.getObject() != null) {
             return response.getObject();
         } else {

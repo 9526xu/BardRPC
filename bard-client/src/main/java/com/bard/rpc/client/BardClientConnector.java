@@ -1,5 +1,6 @@
 package com.bard.rpc.client;
 
+import com.bard.rpc.CallBackService;
 import com.bard.transport.BardRpcRequest;
 
 import java.io.Closeable;
@@ -15,7 +16,7 @@ public interface BardClientConnector extends Closeable {
 
     void connect();
 
-    void sendRequest(BardRpcRequest request);
+    CallBackService sendRequest(BardRpcRequest request);
 
     @Override
     void close() throws IOException;

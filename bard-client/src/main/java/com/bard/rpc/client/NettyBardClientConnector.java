@@ -46,6 +46,7 @@ public class NettyBardClientConnector implements BardClientConnector {
         this(new RpcConnectConfig(host, port));
     }
 
+    // todo 并发问题
     @Override
     public void connect() {
         log.info("start connect");
@@ -74,10 +75,10 @@ public class NettyBardClientConnector implements BardClientConnector {
     }
 
     @Override
-    public void sendRequest(BardRpcRequest request) {
+    public CallBackService sendRequest(BardRpcRequest request) {
         // channel 为空或未就绪
         if (channel == null || !channel.isActive()) {
-            throw new RuntimeException("channel 尚未创建或者 channel 连接未就绪");
+            connect();
         }
         ChannelFuture sendFeature = channel.writeAndFlush(request);
         CallBackService callBackService = new CallBackService(request);
@@ -89,6 +90,8 @@ public class NettyBardClientConnector implements BardClientConnector {
                 log.error("请求数据:{},发送失败", JSON.toJSONString(request));
             }
         });
+
+        return callBackService;
 
     }
 

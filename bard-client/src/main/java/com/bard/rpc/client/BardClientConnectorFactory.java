@@ -13,16 +13,16 @@ import java.util.Map;
  */
 public class BardClientConnectorFactory {
 
-    private final Map<String, BardClientConnector> clientMap = Maps.newConcurrentMap();
+    private final static Map<String, BardClientConnector> clientMap = Maps.newConcurrentMap();
 
-    public BardClientConnector getNettyClientInstance(RpcConnectConfig config) {
+    public static BardClientConnector newNettyClientInstance(RpcConnectConfig config) {
         check(config);
         // 先查看 map 中是否存在已经创建好的 client
         BardClientConnector client = clientMap.getOrDefault(config.getAddress(), new NettyBardClientConnector(config));
         return client;
     }
 
-    private void check(RpcConnectConfig config) {
+    private static void check(RpcConnectConfig config) {
         Preconditions.checkNotNull(config);
         Preconditions.checkArgument(StringUtils.isBlank(config.getHost()));
         Preconditions.checkArgument(config.getPort() == null);
