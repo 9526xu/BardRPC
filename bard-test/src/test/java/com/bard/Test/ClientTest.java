@@ -3,6 +3,8 @@ package com.bard.Test;
 import com.bard.rpc.DefaultRpcClient;
 import com.bard.rpc.RpcClient;
 
+import java.io.IOException;
+
 /**
  * @Author andyXu xu9529@gmail.com
  * @Date 2017/11/8
@@ -15,5 +17,11 @@ public class ClientTest {
         String result = inface.helloWorld("RPC Test");
 
         System.out.println("返回结果:" + result);
+
+        try {
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

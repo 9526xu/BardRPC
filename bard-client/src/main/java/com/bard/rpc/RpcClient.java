@@ -1,5 +1,9 @@
 package com.bard.rpc;
 
+import com.bard.rpc.client.BardClientConnectorFactory;
+
+import java.io.IOException;
+
 /**
  * @Author andyXu xu9529@gmail.com
  * @Date 2017/10/23
@@ -32,5 +36,9 @@ public abstract class RpcClient {
      * @return
      */
     public abstract <T> T refer(Class<T> classT);
+
+    public void close() throws IOException {
+        BardClientConnectorFactory.closeNettyClient(config);
+    }
 
 }
